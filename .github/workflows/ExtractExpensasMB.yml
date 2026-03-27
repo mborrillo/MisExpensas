@@ -1,0 +1,42 @@
+name: Extract Expensas
+
+on:
+  # Ejecutar manualmente desde GitHub
+  workflow_dispatch:
+  # Ejecutar automáticamente el primer día de cada mes a las 8:00 AM
+  schedule:
+    - cron: '0 8 1 * *'
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Run extraction script
+      env:
+        DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      run: |
+        python scripts/extract.py
+    
+    - name: Upload logs (si hay error)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: error-logs
+        path: |
+          *.log
+          error_*.txt
