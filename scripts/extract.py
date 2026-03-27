@@ -16,7 +16,7 @@ from googleapiclient.http import MediaIoBaseDownload
 from datetime import datetime
 
 # Configuración
-FOLDER_ID = os.environ.get('https://drive.google.com/drive/folders/19Okcoogy127t38mEPpG13yHcuwvwEAGB?usp=sharing')
+FOLDER_ID = os.environ.get('19Okcoogy127t38mEPpG13yHcuwvwEAGB')
 DATABASE_URL = os.environ.get('EXPENSAS_ADM_MB_CABA_I743')
 CREDENTIALS_FILE = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
