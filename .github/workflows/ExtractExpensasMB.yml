@@ -27,7 +27,7 @@ jobs:
     - name: Run extraction script
       env:
         DATABASE_URL: ${{ secrets.EXPENSAS_ADM_MB }}
-        GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.EXPENSAS_ADM_MB }}
+        GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.19Okcoogy127t38mEPpG13yHcuwvwEAGB }}
         GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
       run: |
         python scripts/extract.py
