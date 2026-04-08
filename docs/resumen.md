@@ -29,6 +29,6 @@ Herramienta de control del consorcio
 - Hallazgos automáticos
 
 ## Contacto
-Email: 68borrismar@gmail.com
-Wsp: https://wa.link/vvzmot
-https://marcos-borrillo.lovable.app
+- Email: 68borrismar@gmail.com
+- Wsp: https://wa.link/vvzmot
+- Web: https://marcos-borrillo.lovable.app
