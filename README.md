@@ -1,6 +1,6 @@
 Mis Expensas
 
-###Descripción:
+##Descripción:
 
 Herramienta de análisis automático de liquidaciones de expensas en formato PDF.
 
@@ -8,9 +8,9 @@ Convierte una liquidación compleja en un dashboard claro con indicadores financ
 
 características
 
-✔ procesamiento local (no sube datos a servidores)
-✔ dashboard interactivo
-✔ indicadores clave
-✔ detección de inconsistencias
-✔ insights automáticos
-✔ exportación de resultados
+- ✔ procesamiento local (no sube datos a servidores)
+- ✔ dashboard interactivo
+- ✔ indicadores clave
+- ✔ detección de inconsistencias
+- ✔ insights automáticos
+- ✔ exportación de resultados
