@@ -152,6 +152,7 @@
       <button onclick="showPage('deudores')"    id="tab-deudores"    class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">⚠️ Deudores</button>
       <button onclick="showPage('patrimonial')" id="tab-patrimonial" class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🏛️ Patrimonial</button>
       <button onclick="showPage('hallazgos')"   id="tab-hallazgos"   class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🎯 Hallazgos</button>
+      <button onclick="showPage('glosario')"    id="tab-glosario"    class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">📖 Glosario</button>
       <button onclick="showPage('log')"         id="tab-log"         class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🔍 Log</button>
     </div>
   </nav>
@@ -325,13 +326,13 @@
     </div>
   </div>
 
-  <!-- ════ HALLAZGOS & RECOMENDACIONES ═══════════════════════════════════════ -->
+  <!-- ════ HALLAZGOS & ESTRATEGIA ═══════════════════════════════════════ -->
   <div id="page-hallazgos" class="page space-y-5">
     <div class="card" style="padding:1.5rem;">
       <div class="flex items-center gap-3 mb-1">
         <span class="text-2xl">🎯</span>
         <div>
-          <h2 class="text-lg font-bold text-white">Hallazgos & Recomendaciones</h2>
+          <h2 class="text-lg font-bold text-white">Hallazgos & Estrategia</h2>
           <p id="hallazgos-periodo" class="text-xs text-slate-400 mt-0.5">—</p>
         </div>
       </div>
@@ -359,6 +360,201 @@
   </div>
 
   <!-- ════ LOG ══════════════════════════════════════════════════════════ -->
+
+  <div id="page-glosario" class="page space-y-5">
+
+    <div class="card">
+      <h3 class="text-lg font-semibold text-slate-100 mb-1">📖 Glosario de Términos</h3>
+      <p class="text-xs text-slate-400 mb-4">Explicación sencilla de los conceptos más importantes que aparecen en las liquidaciones de expensas.</p>
+    </div>
+
+    <!-- Gastos Generales -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-cyan-400 mb-3 flex items-center gap-2">💰 Conceptos de Ingresos y Egresos</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Expensas Ordinarias</div>
+          <div class="text-xs text-slate-400 mt-1">Gastos mensuales habituales del consorcio: sueldos, servicios, mantenimiento, seguros, etc. Se pagan todos los meses.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Expensas Extraordinarias</div>
+          <div class="text-xs text-slate-400 mt-1">Gastos excepcionales aprobados en asamblea: reparaciones importantes, obras, mejoras. No son recurrentes.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Fondo de Reserva</div>
+          <div class="text-xs text-slate-400 mt-1">Ahorro obligatorio del consorcio para cubrir imprevistos o gastos futuros. Generalmente es un 5% del total de expensas ordinarias.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Coeficiente / Porcentual</div>
+          <div class="text-xs text-slate-400 mt-1">El porcentaje que le corresponde pagar a cada unidad funcional según el reglamento de copropiedad. Refleja la proporción de cada departamento sobre el total.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-emerald-400 mb-3 flex items-center gap-2">👥 Personal y Cargas Sociales</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Sueldo Básico</div>
+          <div class="text-xs text-slate-400 mt-1">Remuneración mínima que le corresponde al trabajador según su categoría y el convenio colectivo (SUTERH).</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Adicional por Antigüedad</div>
+          <div class="text-xs text-slate-400 mt-1">Plus salarial que se paga por cada año de servicio del empleado en el consorcio.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Horas Extras</div>
+          <div class="text-xs text-slate-400 mt-1">Horas trabajadas por encima de la jornada legal. Se pagan al 50% o 100% más según si son en día hábil, sábado después de las 13hs, domingo o feriado.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">SAC (Aguinaldo)</div>
+          <div class="text-xs text-slate-400 mt-1">Sueldo Anual Complementario. Se paga en dos cuotas (junio y diciembre). Equivale al 50% de la mayor remuneración mensual del semestre.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Sueldo Bruto</div>
+          <div class="text-xs text-slate-400 mt-1">Total de haberes antes de los descuentos. Incluye sueldo básico + adicionales + horas extras + otros conceptos remunerativos.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Sueldo Neto</div>
+          <div class="text-xs text-slate-400 mt-1">Lo que efectivamente cobra el empleado: sueldo bruto menos todos los descuentos legales (jubilación, obra social, sindicato, etc.).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Descuentos -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-amber-400 mb-3 flex items-center gap-2">📑 Descuentos al Empleado (Retenciones)</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Jubilación (11%)</div>
+          <div class="text-xs text-slate-400 mt-1">Aporte obligatorio del trabajador al sistema previsional (ANSES). Se descuenta del sueldo bruto.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Ley 19.032 / PAMI (3%)</div>
+          <div class="text-xs text-slate-400 mt-1">Aporte obligatorio para el Instituto Nacional de Servicios Sociales para Jubilados y Pensionados (PAMI).</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Obra Social (3%)</div>
+          <div class="text-xs text-slate-400 mt-1">Aporte del empleado para su cobertura de salud. En encargados de edificios suele ser OSPERYH.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Cuota Sindical / SUTERH (2%)</div>
+          <div class="text-xs text-slate-400 mt-1">Aporte al sindicato de trabajadores de edificios de renta y horizontal. Es obligatorio para afiliados.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">FATERYH</div>
+          <div class="text-xs text-slate-400 mt-1">Federación Argentina de Trabajadores de Edificios de Renta y Horizontal. Aporte para servicios y beneficios del sector.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Seguro Sepelio</div>
+          <div class="text-xs text-slate-400 mt-1">Cobertura de servicio de sepelio para el trabajador y su grupo familiar. Se descuenta mensualmente.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aportes Patronales -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-purple-400 mb-3 flex items-center gap-2">🏢 Contribuciones Patronales (a cargo del consorcio)</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Contrib. Jubilación Patronal</div>
+          <div class="text-xs text-slate-400 mt-1">Aporte que hace el consorcio (empleador) al sistema jubilatorio, adicional al que aporta el empleado.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Obra Social Patronal</div>
+          <div class="text-xs text-slate-400 mt-1">Contribución del empleador a la obra social del empleado. Es adicional al aporte del trabajador.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">ART (Aseguradora de Riesgos del Trabajo)</div>
+          <div class="text-xs text-slate-400 mt-1">Seguro obligatorio que cubre accidentes y enfermedades laborales. Lo paga íntegramente el consorcio.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Seguro de Vida Obligatorio</div>
+          <div class="text-xs text-slate-400 mt-1">Cobertura de vida que el empleador debe contratar por ley para todos sus empleados.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rubros -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-2">📋 Rubros de Gastos Comunes</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Servicios Públicos</div>
+          <div class="text-xs text-slate-400 mt-1">Electricidad, agua, gas y otros servicios de las áreas comunes del edificio.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Abono Mantenimiento</div>
+          <div class="text-xs text-slate-400 mt-1">Contratos mensuales fijos para el mantenimiento de ascensores, bombas de agua, matafuegos, etc.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Seguros</div>
+          <div class="text-xs text-slate-400 mt-1">Pólizas que cubren el edificio: incendio, responsabilidad civil, consorcio, vida obligatorio, etc.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Gastos Administrativos</div>
+          <div class="text-xs text-slate-400 mt-1">Honorarios de la administración, gastos bancarios, sellados, certificaciones y trámites.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Reparaciones y Materiales</div>
+          <div class="text-xs text-slate-400 mt-1">Arreglos puntuales, compra de insumos de limpieza, materiales de mantenimiento, repuestos, etc.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Honorarios Administración</div>
+          <div class="text-xs text-slate-400 mt-1">Retribución mensual que cobra el administrador por gestionar el consorcio. Suele ser un porcentaje de los gastos o un monto fijo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deudores -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-orange-400 mb-3 flex items-center gap-2">⚠️ Deudores y Cobranzas</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Unidad Funcional (UF)</div>
+          <div class="text-xs text-slate-400 mt-1">Cada departamento, local u oficina del edificio identificado con un número único en el reglamento de copropiedad.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Deuda Acumulada</div>
+          <div class="text-xs text-slate-400 mt-1">Total adeudado por una unidad funcional, incluyendo expensas impagas de meses anteriores más intereses si corresponde.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Intereses por Mora</div>
+          <div class="text-xs text-slate-400 mt-1">Recargo aplicado a las expensas impagas. La tasa se define en asamblea y se acumula mes a mes sobre el saldo adeudado.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Intimación / Gestión Judicial</div>
+          <div class="text-xs text-slate-400 mt-1">Acciones legales que el consorcio puede iniciar contra propietarios morosos para recuperar las expensas adeudadas.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patrimonial -->
+    <div class="card">
+      <h4 class="text-sm font-bold text-sky-400 mb-3 flex items-center gap-2">🏛️ Información Patrimonial</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Activo</div>
+          <div class="text-xs text-slate-400 mt-1">Todo lo que el consorcio posee o le deben: saldo en bancos, caja chica, créditos por expensas a cobrar.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Pasivo</div>
+          <div class="text-xs text-slate-400 mt-1">Todo lo que el consorcio debe: sueldos por pagar, cargas sociales pendientes, proveedores impagos, deudas.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Patrimonio Neto</div>
+          <div class="text-xs text-slate-400 mt-1">Diferencia entre Activo y Pasivo. Indica la situación financiera real del consorcio. Si es positivo, el consorcio tiene más de lo que debe.</div>
+        </div>
+        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div class="text-sm font-semibold text-slate-200">Banco Ciudad</div>
+          <div class="text-xs text-slate-400 mt-1">Cuenta bancaria obligatoria del consorcio en el Banco Ciudad de Buenos Aires, según la Ley 3254 de CABA.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <div id="page-log" class="page">
     <div class="card">
       <h3 class="text-sm font-semibold mb-3 text-slate-200">🔍 Log de Procesamiento</h3>
@@ -385,7 +581,7 @@ const RUBRO_NOMBRES = {
 };
 const PALETTE = ['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6',
                  '#06b6d4','#ec4899','#14b8a6','#f97316','#6366f1'];
-const PAGES = ['resumen','rubros','personal','proveedores','deudores','patrimonial','hallazgos','log'];
+const PAGES = ['resumen','rubros','personal','proveedores','deudores','patrimonial','hallazgos','glosario','log'];
 
 let gData  = null;
 let charts = {};
