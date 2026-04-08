@@ -20,9 +20,9 @@ Convierte una liquidación compleja en un dashboard claro con indicadores financ
 - ✔ Premium
 
 ## Instrucciones
-- Descargar HTML
+- Descargar HTML (desde carpeta recursos)
 - Abrir en Navegador
-- Cargar PDF de Muestra
+- Cargar PDF de Muestra (desde carpeta recursos)
 - Dashboard listo para visualizar
 
 ## Aclaraciones importantes
