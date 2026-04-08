@@ -27,3 +27,6 @@ Convierte una liquidación compleja en un dashboard claro con indicadores financ
 
 ## Aclaraciones importantes
 El archivo se ejecuta en local, sin necesidad de estar conectado a la red. Los datos, no se envian a ninguna plataforma ni servidor.
+
+*Para inversión o integración institucional:*
+https://marcos-borrillo.lovable.app · WhatsApp: https://wa.link/vvzmot
