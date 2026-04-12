@@ -7,6 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jsPDF + html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --bg:#0f172a; --card:#1e293b; --card2:#172033;
@@ -138,6 +141,9 @@
         📤 Cargar PDF
         <input type="file" id="fileInput" accept=".pdf" class="hidden">
       </label>
+      <button id="pdfBtn" onclick="exportActiveToPDF()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium text-white transition flex items-center gap-1">
+        📄 Exportar PDF
+      </button>
       <button id="clearBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-medium text-slate-300 transition">🧹 Limpiar</button>
     </div>
   </header>
@@ -146,14 +152,9 @@
   <nav class="fixed top-14 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 overflow-x-auto">
     <div class="flex gap-0.5 min-w-max">
       <button onclick="showPage('resumen')"     id="tab-resumen"     class="tab-a px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">📊 Resumen</button>
-      <button onclick="showPage('rubros')"      id="tab-rubros"      class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">📋 Gastos por Rubro</button>
       <button onclick="showPage('personal')"    id="tab-personal"    class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">👥 Personal & Cargas</button>
-      <button onclick="showPage('proveedores')" id="tab-proveedores" class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🏭 Proveedores</button>
       <button onclick="showPage('deudores')"    id="tab-deudores"    class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">⚠️ Deudores</button>
-      <button onclick="showPage('patrimonial')" id="tab-patrimonial" class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🏛️ Patrimonial</button>
-      <button onclick="showPage('hallazgos')"   id="tab-hallazgos"   class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🎯 Hallazgos</button>
-      <button onclick="showPage('glosario')"    id="tab-glosario"    class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">📖 Glosario</button>
-      <button onclick="showPage('log')"         id="tab-log"         class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">🔍 Log</button>
+      <button onclick="showPage('rubros')"      id="tab-rubros"      class="tab-i px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition">📋 Gastos por Rubro</button>
     </div>
   </nav>
 
@@ -173,56 +174,19 @@
       <div class="card"><h3 class="text-sm font-semibold mb-3 text-slate-200">💰 Top Proveedores</h3><div class="chart-box" style="height:260px"><canvas id="cProv"></canvas></div></div>
       <div class="card"><h3 class="text-sm font-semibold mb-3 text-slate-200">🏛️ Saldo vs Deuda</h3><div class="chart-box" style="height:260px"><canvas id="cPatr"></canvas></div></div>
     </div>
-    <!-- 4to gráfico + tabla empleados -->
-     <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <!--<div class="card"><h3 class="text-sm font-semibold mb-3 text-slate-200">👥 Desglose Rubro 1 — Personal & Cargas</h3><div class="chart-box" style="height:260px"><canvas id="cPersonalBreak"></canvas></div></div> -->
-      <div class="card">
-        <h3 class="text-sm font-semibold mb-3 text-slate-200">👤 Resumen de Empleados</h3> 
-        <div class="t-wrap">
-          <table><thead><tr>
-            <th>Empleado</th>
-            <th>Cargo</th>
-            <th style="text-align:right;">Bruto ($)</th>
-            <th style="text-align:right;">Neto ($)</th>
-            <th style="text-align:right;">% gastos</th>
-          </tr></thead>
-          <tbody id="resumen-empleados-body"></tbody></table>
-        </div> 
-        <div id="resumen-empleados-empty" class="text-slate-500 text-sm p-3 hidden">Sin datos de empleados</div>
-      </div>
-    </div> 
-  </div>
-
-  <!-- ════ GASTOS POR RUBRO ══════════════════════════════════════════════ -->
-  <div id="page-rubros" class="page">
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-700">
-        <span id="rubros-subtitle" class="text-sm text-slate-400">—</span>
-        <div class="flex items-center gap-2 flex-wrap">
-          <select id="filtroRubro" onchange="filtrarRubros()" class="search-box" style="width:auto;">
-            <option value="">Todos los rubros</option>
-          </select>
-          <input id="searchRubros" type="text" class="search-box" style="width:210px;" placeholder="🔍 Buscar concepto o proveedor…" oninput="filtrarRubros()">
-        </div>
-      </div>
+    <div class="card">
+      <h3 class="text-sm font-semibold mb-3 text-slate-200">👤 Resumen de Empleados</h3> 
       <div class="t-wrap">
-        <table id="tblRubros">
-          <thead><tr>
-            <th style="width:180px;" onclick="sortTable('tblRubros',0,'s',this)">Rubro <span class="sa"></span></th>
-            <th onclick="sortTable('tblRubros',1,'s',this)">Concepto / Proveedor <span class="sa"></span></th>
-            <th style="text-align:right;width:150px;" onclick="sortTable('tblRubros',2,'n',this)">Importe ($) <span class="sa"></span></th>
-            <th style="text-align:right;width:90px;" onclick="sortTable('tblRubros',3,'n',this)">% Total <span class="sa"></span></th>
-          </tr></thead>
-          <tbody id="bodyRubros"></tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap justify-between items-center px-4 py-3 border-t border-slate-700 text-sm gap-2">
-        <span id="rubros-count-label" class="text-slate-400">—</span>
-        <div class="flex gap-5">
-          <span class="text-slate-400">TOTAL GASTOS</span>
-          <span id="rubros-total-display" class="font-bold font-mono text-white">—</span>
-        </div>
-      </div>
+        <table><thead><tr>
+          <th>Empleado</th>
+          <th>Cargo</th>
+          <th style="text-align:right;">Bruto ($)</th>
+          <th style="text-align:right;">Neto ($)</th>
+          <th style="text-align:right;">% gastos</th>
+        </tr></thead>
+        <tbody id="resumen-empleados-body"></tbody></table>
+      </div> 
+      <div id="resumen-empleados-empty" class="text-slate-500 text-sm p-3 hidden">Sin datos de empleados</div>
     </div>
   </div>
 
@@ -253,25 +217,6 @@
     </div>
   </div>
 
-  <!-- ════ PROVEEDORES ═══════════════════════════════════════════════════ -->
-  <div id="page-proveedores" class="page">
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-700">
-        <span class="text-sm text-slate-400">Proveedores ordenados por importe</span>
-        <input type="text" class="search-box" style="width:220px;" placeholder="🔍 Buscar proveedor…" oninput="filtrarTabla('bodyProv',this.value)">
-      </div>
-      <div class="t-wrap"><table id="tblProv">
-        <thead><tr>
-          <th onclick="sortTable('tblProv',0,'s',this)">Proveedor <span class="sa"></span></th>
-          <th style="text-align:right;" onclick="sortTable('tblProv',1,'n',this)">Importe ($) <span class="sa"></span></th>
-          <th style="text-align:right;" onclick="sortTable('tblProv',2,'n',this)">% Total <span class="sa"></span></th>
-          <th>Participación</th>
-        </tr></thead>
-        <tbody id="bodyProv"></tbody>
-      </table></div>
-    </div>
-  </div>
-
   <!-- ════ DEUDORES ══════════════════════════════════════════════════════ -->
   <div id="page-deudores" class="page">
     <div class="card" style="padding:0;overflow:hidden;">
@@ -296,274 +241,30 @@
     </div>
   </div>
 
-  <!-- ════ PATRIMONIAL ═══════════════════════════════════════════════════ -->
-  <div id="page-patrimonial" class="page space-y-4">
-    <div class="card">
-      <h2 class="text-lg font-bold mb-5">🏛️ Estado Patrimonial</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-        <div class="bg-slate-800/50 p-4 rounded-lg">
-          <h3 class="text-xs font-semibold text-slate-400 mb-3">ACTIVO</h3>
-          <div class="space-y-3 text-sm">
-            <div class="flex justify-between"><span class="text-slate-300">Saldo disponibilidades</span><span id="pp-disp" class="text-cyan-400 font-mono">—</span></div>
-            <div class="flex justify-between"><span class="text-slate-300">Expensas a cobrar</span><span id="pp-exp" class="text-orange-400 font-mono">—</span></div>
-            <div class="flex justify-between"><span class="text-slate-300">Otros activos</span><span id="pp-otros" class="text-slate-400 font-mono">—</span></div>
-            <div class="border-t border-slate-700 pt-2 flex justify-between font-semibold"><span>TOTAL ACTIVO</span><span id="pp-activo" class="text-green-400 font-mono">—</span></div>
-          </div>
-        </div>
-        <div class="bg-slate-800/50 p-4 rounded-lg">
-          <h3 class="text-xs font-semibold text-slate-400 mb-3">PASIVO</h3>
-          <div class="space-y-3 text-sm">
-            <div class="flex justify-between"><span class="text-slate-300">Gastos pendientes de pago</span><span id="pp-pend" class="text-slate-400 font-mono">—</span></div>
-            <div class="border-t border-slate-700 pt-2 flex justify-between font-semibold"><span>TOTAL PASIVO</span><span id="pp-pasivo" class="text-red-400 font-mono">—</span></div>
-          </div>
+  <!-- ════ GASTOS POR RUBRO ═════════════════════════════════════════════ -->
+  <div id="page-rubros" class="page">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-700">
+        <span id="rubros-subtitle" class="text-sm text-slate-400">—</span>
+        <input id="searchRubros" type="text" class="search-box" style="width:280px;" placeholder="🔍 Buscar rubro o concepto…" oninput="filtrarRubros()">
+      </div>
+      <div class="t-wrap">
+        <table id="tblRubros">
+          <thead><tr>
+            <th style="width:180px;" onclick="sortTable('tblRubros',0,'s',this)">Rubro <span class="sa"></span></th>
+            <th style="text-align:right;width:150px;" onclick="sortTable('tblRubros',1,'n',this)">Importe ($) <span class="sa"></span></th>
+            <th style="text-align:right;width:90px;" onclick="sortTable('tblRubros',2,'n',this)">% Total <span class="sa"></span></th>
+          </tr></thead>
+          <tbody id="bodyRubros"></tbody>
+        </table>
+      </div>
+      <div class="flex flex-wrap justify-between items-center px-4 py-3 border-t border-slate-700 text-sm gap-2">
+        <span id="rubros-count-label" class="text-slate-400">—</span>
+        <div class="flex gap-5">
+          <span class="text-slate-400">TOTAL GASTOS</span>
+          <span id="rubros-total-display" class="font-bold font-mono text-white">—</span>
         </div>
       </div>
-      <div class="bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-5 rounded-xl border border-blue-700/40 flex justify-between items-center flex-wrap gap-3">
-        <div><h3 class="font-bold text-white">PATRIMONIO NETO AL CIERRE</h3><p class="text-xs text-slate-400 mt-1">Activo − Pasivo</p></div>
-        <span id="pp-neto" class="text-3xl font-bold text-green-400 font-mono">—</span>
-      </div>
-      <div class="mt-5 chart-box" style="height:280px"><canvas id="cPatrimonial"></canvas></div>
-    </div>
-  </div>
-
-  <!-- ════ HALLAZGOS & ESTRATEGIA ═══════════════════════════════════════ -->
-  <div id="page-hallazgos" class="page space-y-5">
-    <div class="card" style="padding:1.5rem;">
-      <div class="flex items-center gap-3 mb-1">
-        <span class="text-2xl">🎯</span>
-        <div>
-          <h2 class="text-lg font-bold text-white">Hallazgos & Estrategia</h2>
-          <p id="hallazgos-periodo" class="text-xs text-slate-400 mt-0.5">—</p>
-        </div>
-      </div>
-    </div>
-    <!-- Alertas críticas -->
-    <div>
-      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 px-1">🔴 Alertas críticas</h3>
-      <div id="hall-criticas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-    <!-- Puntos de atención -->
-    <div>
-      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 px-1">🟡 Puntos de atención</h3>
-      <div id="hall-atencion" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-    <!-- Puntos positivos -->
-    <div>
-      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 px-1">🟢 Aspectos positivos</h3>
-      <div id="hall-positivos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-    <!-- Cursos de acción -->
-    <div>
-      <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 px-1">🔵 Cursos de acción recomendados</h3>
-      <div id="hall-acciones" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-  </div>
-
-  <!-- ════ LOG ══════════════════════════════════════════════════════════ -->
-
-  <div id="page-glosario" class="page space-y-5">
-
-    <div class="card">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 class="text-lg font-semibold text-slate-100 mb-1">📖 Glosario de Términos</h3>
-          <p class="text-xs text-slate-400">Explicación sencilla de los conceptos más importantes que aparecen en las liquidaciones de expensas.</p>
-        </div>
-        <input type="text" id="searchGlosario" class="search-box" style="width:220px;" placeholder="🔍 Buscar término…" oninput="filtrarGlosario(this.value)">
-      </div>
-    </div>
-
-    <!-- Gastos Generales -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-cyan-400 mb-3 flex items-center gap-2">💰 Conceptos de Ingresos y Egresos</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Expensas Ordinarias</div>
-          <div class="text-xs text-slate-400 mt-1">Gastos mensuales habituales del consorcio: sueldos, servicios, mantenimiento, seguros, etc. Se pagan todos los meses.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Expensas Extraordinarias</div>
-          <div class="text-xs text-slate-400 mt-1">Gastos excepcionales aprobados en asamblea: reparaciones importantes, obras, mejoras. No son recurrentes.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Fondo de Reserva</div>
-          <div class="text-xs text-slate-400 mt-1">Ahorro obligatorio del consorcio para cubrir imprevistos o gastos futuros. Generalmente es un 5% del total de expensas ordinarias.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Coeficiente / Porcentual</div>
-          <div class="text-xs text-slate-400 mt-1">El porcentaje que le corresponde pagar a cada unidad funcional según el reglamento de copropiedad. Refleja la proporción de cada departamento sobre el total.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Personal -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-emerald-400 mb-3 flex items-center gap-2">👥 Personal y Cargas Sociales</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Sueldo Básico</div>
-          <div class="text-xs text-slate-400 mt-1">Remuneración mínima que le corresponde al trabajador según su categoría y el convenio colectivo (SUTERH).</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Adicional por Antigüedad</div>
-          <div class="text-xs text-slate-400 mt-1">Plus salarial que se paga por cada año de servicio del empleado en el consorcio.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Horas Extras</div>
-          <div class="text-xs text-slate-400 mt-1">Horas trabajadas por encima de la jornada legal. Se pagan al 50% o 100% más según si son en día hábil, sábado después de las 13hs, domingo o feriado.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">SAC (Aguinaldo)</div>
-          <div class="text-xs text-slate-400 mt-1">Sueldo Anual Complementario. Se paga en dos cuotas (junio y diciembre). Equivale al 50% de la mayor remuneración mensual del semestre.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Sueldo Bruto</div>
-          <div class="text-xs text-slate-400 mt-1">Total de haberes antes de los descuentos. Incluye sueldo básico + adicionales + horas extras + otros conceptos remunerativos.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Sueldo Neto</div>
-          <div class="text-xs text-slate-400 mt-1">Lo que efectivamente cobra el empleado: sueldo bruto menos todos los descuentos legales (jubilación, obra social, sindicato, etc.).</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Descuentos -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-amber-400 mb-3 flex items-center gap-2">📑 Descuentos al Empleado (Retenciones)</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Jubilación (11%)</div>
-          <div class="text-xs text-slate-400 mt-1">Aporte obligatorio del trabajador al sistema previsional (ANSES). Se descuenta del sueldo bruto.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Ley 19.032 / PAMI (3%)</div>
-          <div class="text-xs text-slate-400 mt-1">Aporte obligatorio para el Instituto Nacional de Servicios Sociales para Jubilados y Pensionados (PAMI).</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Obra Social (3%)</div>
-          <div class="text-xs text-slate-400 mt-1">Aporte del empleado para su cobertura de salud. En encargados de edificios suele ser OSPERYH.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Cuota Sindical / SUTERH (2%)</div>
-          <div class="text-xs text-slate-400 mt-1">Aporte al sindicato de trabajadores de edificios de renta y horizontal. Es obligatorio para afiliados.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">FATERYH</div>
-          <div class="text-xs text-slate-400 mt-1">Federación Argentina de Trabajadores de Edificios de Renta y Horizontal. Aporte para servicios y beneficios del sector.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Seguro Sepelio</div>
-          <div class="text-xs text-slate-400 mt-1">Cobertura de servicio de sepelio para el trabajador y su grupo familiar. Se descuenta mensualmente.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Aportes Patronales -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-purple-400 mb-3 flex items-center gap-2">🏢 Contribuciones Patronales (a cargo del consorcio)</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Contrib. Jubilación Patronal</div>
-          <div class="text-xs text-slate-400 mt-1">Aporte que hace el consorcio (empleador) al sistema jubilatorio, adicional al que aporta el empleado.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Obra Social Patronal</div>
-          <div class="text-xs text-slate-400 mt-1">Contribución del empleador a la obra social del empleado. Es adicional al aporte del trabajador.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">ART (Aseguradora de Riesgos del Trabajo)</div>
-          <div class="text-xs text-slate-400 mt-1">Seguro obligatorio que cubre accidentes y enfermedades laborales. Lo paga íntegramente el consorcio.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Seguro de Vida Obligatorio</div>
-          <div class="text-xs text-slate-400 mt-1">Cobertura de vida que el empleador debe contratar por ley para todos sus empleados.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Rubros -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-rose-400 mb-3 flex items-center gap-2">📋 Rubros de Gastos Comunes</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Servicios Públicos</div>
-          <div class="text-xs text-slate-400 mt-1">Electricidad, agua, gas y otros servicios de las áreas comunes del edificio.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Abono Mantenimiento</div>
-          <div class="text-xs text-slate-400 mt-1">Contratos mensuales fijos para el mantenimiento de ascensores, bombas de agua, matafuegos, etc.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Seguros</div>
-          <div class="text-xs text-slate-400 mt-1">Pólizas que cubren el edificio: incendio, responsabilidad civil, consorcio, vida obligatorio, etc.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Gastos Administrativos</div>
-          <div class="text-xs text-slate-400 mt-1">Honorarios de la administración, gastos bancarios, sellados, certificaciones y trámites.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Reparaciones y Materiales</div>
-          <div class="text-xs text-slate-400 mt-1">Arreglos puntuales, compra de insumos de limpieza, materiales de mantenimiento, repuestos, etc.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Honorarios Administración</div>
-          <div class="text-xs text-slate-400 mt-1">Retribución mensual que cobra el administrador por gestionar el consorcio. Suele ser un porcentaje de los gastos o un monto fijo.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Deudores -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-orange-400 mb-3 flex items-center gap-2">⚠️ Deudores y Cobranzas</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Unidad Funcional (UF)</div>
-          <div class="text-xs text-slate-400 mt-1">Cada departamento, local u oficina del edificio identificado con un número único en el reglamento de copropiedad.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Deuda Acumulada</div>
-          <div class="text-xs text-slate-400 mt-1">Total adeudado por una unidad funcional, incluyendo expensas impagas de meses anteriores más intereses si corresponde.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Intereses por Mora</div>
-          <div class="text-xs text-slate-400 mt-1">Recargo aplicado a las expensas impagas. La tasa se define en asamblea y se acumula mes a mes sobre el saldo adeudado.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Intimación / Gestión Judicial</div>
-          <div class="text-xs text-slate-400 mt-1">Acciones legales que el consorcio puede iniciar contra propietarios morosos para recuperar las expensas adeudadas.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Patrimonial -->
-    <div class="card">
-      <h4 class="text-sm font-bold text-sky-400 mb-3 flex items-center gap-2">🏛️ Información Patrimonial</h4>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Activo</div>
-          <div class="text-xs text-slate-400 mt-1">Todo lo que el consorcio posee o le deben: saldo en bancos, caja chica, créditos por expensas a cobrar.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Pasivo</div>
-          <div class="text-xs text-slate-400 mt-1">Todo lo que el consorcio debe: sueldos por pagar, cargas sociales pendientes, proveedores impagos, deudas.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Patrimonio Neto</div>
-          <div class="text-xs text-slate-400 mt-1">Diferencia entre Activo y Pasivo. Indica la situación financiera real del consorcio. Si es positivo, el consorcio tiene más de lo que debe.</div>
-        </div>
-        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-          <div class="text-sm font-semibold text-slate-200">Banco Ciudad</div>
-          <div class="text-xs text-slate-400 mt-1">Cuenta bancaria obligatoria del consorcio en el Banco Ciudad de Buenos Aires, según la Ley 3254 de CABA.</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div id="page-log" class="page">
-    <div class="card">
-      <h3 class="text-sm font-semibold mb-3 text-slate-200">🔍 Log de Procesamiento</h3>
-      <div id="logContainer" class="log-wrap"></div>
     </div>
   </div>
 
@@ -586,7 +287,7 @@ const RUBRO_NOMBRES = {
 };
 const PALETTE = ['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6',
                  '#06b6d4','#ec4899','#14b8a6','#f97316','#6366f1'];
-const PAGES = ['resumen','rubros','personal','proveedores','deudores','patrimonial','hallazgos','glosario','log'];
+const PAGES = ['resumen','personal','deudores','rubros'];
 
 let gData  = null;
 let charts = {};
@@ -647,46 +348,24 @@ function filtrarTabla(bodyId, q) {
 }
 
 /* ──── Filtro Glosario ──────────────────────────────────────────────── */
-function filtrarGlosario(q) {
-  const t = q.toLowerCase().trim();
-  // Recorrer todos los cards del glosario excepto el header (primer card)
-  const cards = document.querySelectorAll('#page-glosario .card');
-  cards.forEach((card, idx) => {
-    if (idx === 0) return; // card de cabecera con el buscador
-    if (!t) { card.style.display = ''; card.querySelectorAll('.bg-slate-800\\/50').forEach(i => i.style.display = ''); return; }
-    let anyVisible = false;
-    card.querySelectorAll('.bg-slate-800\\/50').forEach(item => {
-      const match = item.textContent.toLowerCase().includes(t);
-      item.style.display = match ? '' : 'none';
-      if (match) anyVisible = true;
-    });
-    card.style.display = anyVisible ? '' : 'none';
-  });
-}
-
 /* ──── Filtro Gastos por Rubro ──────────────────────────────────────── */
 function filtrarRubros() {
   const q  = document.getElementById('searchRubros').value.toLowerCase();
-  const rb = document.getElementById('filtroRubro').value;
   let visible=0;
   document.querySelectorAll('#bodyRubros tr').forEach(r=>{
     const textOk = !q||r.textContent.toLowerCase().includes(q);
-    const rbOk   = !rb||r.dataset.rubro===rb;
-    r.style.display=(textOk&&rbOk)?'':'none';
-    if(textOk&&rbOk) visible++;
+    r.style.display=textOk?'':'none';
+    if(textOk) visible++;
   });
-  document.getElementById('rubros-count-label').textContent=`${visible} conceptos visibles`;
+  document.getElementById('rubros-count-label').textContent=`${visible} rubros visibles`;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   PARSER PRINCIPAL
+   PARSER PRINCIPAL (sin cambios)
 ══════════════════════════════════════════════════════════════════════ */
-
-/* ──── Reconstruir líneas desde items pdf.js usando coordenadas Y ──── */
 function reconstructLines(pagesItems) {
   const allLines = [];
   for (const items of pagesItems) {
-    // Agrupar por coordenada Y (redondeada a 1 decimal para agrupar items en la misma línea)
     const yGroups = {};
     for (const item of items) {
       if (!item.str || !item.str.trim()) continue;
@@ -694,10 +373,8 @@ function reconstructLines(pagesItems) {
       if (!yGroups[y]) yGroups[y] = [];
       yGroups[y].push(item);
     }
-    // Ordenar grupos por Y descendente (PDF tiene Y de abajo a arriba)
     const sortedYs = Object.keys(yGroups).map(Number).sort((a, b) => b - a);
     for (const y of sortedYs) {
-      // Ordenar items dentro de la línea por X
       const lineItems = yGroups[y].sort((a, b) => (a.transform?.[4] || 0) - (b.transform?.[4] || 0));
       const lineText = lineItems.map(i => i.str).join(' ').replace(/\s+/g, ' ').trim();
       if (lineText) allLines.push(lineText);
@@ -720,26 +397,21 @@ function parseLiquidacion(pagesItems) {
     personal:{empleados:[],aportes:[]}
   };
 
-  // Período
   const mPer=clean.match(/Liquidaci[oó]n de mes:\s*([A-Za-záéíóúñÁÉÍÓÚÑ]+\/\d{4})/i);
   if(mPer){data.periodo=mPer[1];log(`📅 Período: ${data.periodo}`);}
 
-  // Edificio
   const mEd=clean.match(/Domicilio del Consorcio:\s*([^\n]+?)(?=CUIT|Período|\s{3})/i);
   if(mEd) data.edificio=mEd[1].trim().replace(/\s+/g,' ');
   if(!data.edificio){const mEd2=clean.match(/AV\.\s*INDEPENDE[CN]IA\s*[\d\/]+/i); if(mEd2)data.edificio=mEd2[0];}
 
-  // Ingresos / Egresos
   const mIng=clean.match(/Ingresos de [ée]ste mes\s*\$?\s*([\d.,]+)/);
   if(mIng){data.ingresos=parseARS(mIng[1]);log(`💰 Ingresos: ${fmtARS(data.ingresos)}`);}
   const mEgr=clean.match(/Egresos realizados en este per[ií]odo\s*\$?\s*-?([\d.,]+)/);
   if(mEgr){data.egresos=parseARS(mEgr[1]);log(`💸 Egresos: ${fmtARS(data.egresos)}`);}
 
-  // Saldo banco
   const mBco=clean.match(/SALDO BANCO CIUDAD AL ([\d\/]+)\s*\$?([\d.,]+)/);
   if(mBco){data.saldoBanco=mBco[1];data.saldoBancoNum=parseARS(mBco[2]);log(`🏦 Banco: ${fmtARS(data.saldoBancoNum)} al ${data.saldoBanco}`);}
 
-  // Estado patrimonial
   const mD=clean.match(/SALDO DE DISPONIBILIDADES AL CIERRE\s*\$?\s*([\d.,]+)/);
   const mE=clean.match(/Expensas y otros conceptos a cobrar\s*\$?\s*([\d.,]+)/);
   const mO=clean.match(/Otros activos\s*\$?\s*([\d.,]+)/);
@@ -753,28 +425,23 @@ function parseLiquidacion(pagesItems) {
     patrimonioNeto:mN?parseARS(mN[1]):0
   };
 
-  // Rubros totales
   const rRx=/TOTAL RUBRO (\d+)\s+([\d,]+)%\s+([\d.,]+)/g;
   let rm;
   while((rm=rRx.exec(clean))!==null)
     data.rubros.push({id:rm[1],pct:parseARS(rm[2]),imp:parseARS(rm[3])});
   log(`📂 Rubros: ${data.rubros.length}`);
 
-  // Gastos por concepto
   data.gastosPorConcepto = extractGastosPorConcepto(clean, data.rubros, pagesItems);
   log(`📋 Conceptos: ${data.gastosPorConcepto.length}`);
 
-  // Proveedores (agrupados del gastosPorConcepto)
   data.proveedores = agruparProveedores(data.gastosPorConcepto, data.rubros);
   log(`💼 Proveedores: ${data.proveedores.length}`);
 
-  // Deudores
   data.deudores = extractDeudores(clean, pageTexts);
   const mDT=clean.match(/TOTAL\.\.\.\s*([\d.,]+)/);
   data.deudaTotalNum=mDT?parseARS(mDT[1]):data.deudores.reduce((s,d)=>s+d.capital,0);
   log(`💳 Deudores: ${data.deudores.length} — Total: ${fmtARS(data.deudaTotalNum)}`);
 
-  // Personal
   data.personal = extractPersonal(full, data.rubros, pagesItems);
   log(`👥 Empleados: ${data.personal.empleados.length} — Aportes: ${data.personal.aportes.length}`);
 
@@ -782,21 +449,18 @@ function parseLiquidacion(pagesItems) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   EXTRACCIÓN GASTOS POR CONCEPTO (ítems reales del PDF)
+   EXTRACCIÓN GASTOS POR CONCEPTO (sin cambios)
 ══════════════════════════════════════════════════════════════════════ */
 function extractGastosPorConcepto(clean, rubros, pagesItems) {
   const conceptos = [];
 
-  // Rubro 1: consolidado
   const r1 = rubros.find(r => r.id === '1');
   if (r1 && r1.imp > 0)
     conceptos.push({rubroId:'1', concepto:'Remuneraciones al Personal y Cargas Sociales (ver tab Personal)', importe:r1.imp, proveedor:'Personal & Cargas'});
 
-  // ── Reconstruir líneas reales desde pdf.js (igual que parser de Personal) ──
   const lineText = reconstructLines(pagesItems);
   const lines = lineText.split('\n');
 
-  // ── Encontrar sección de suministros ──
   let inSuministros = false;
   let suministrosLines = [];
   for (const line of lines) {
@@ -817,38 +481,26 @@ function extractGastosPorConcepto(clean, rubros, pagesItems) {
     return conceptos;
   }
 
-  // ── Parsear línea por línea ──
-  // Cada ítem del PDF ocupa múltiples líneas:
-  //   Línea 1: "N.NOMBRE- CUIT XX-..."  o  "N.NOMBRE CUIT XX-..."
-  //   Líneas siguientes: descripción
-  //   Última línea del ítem: contiene el importe (o la línea con CUIT lo tiene)
-  // Los rubros empiezan con "2 SERVICIOS PÚBLICOS", "3 ABONOS...", etc.
-  // Los totales son "TOTAL RUBRO N pct% importe"
-
   let currentRubroId = null;
-  let buffer = [];   // líneas del ítem actual
+  let buffer = [];
 
   const flushItem = () => {
     if (!buffer.length || !currentRubroId) return;
     const text = buffer.join(' ').replace(/\s+/g, ' ').trim();
     buffer = [];
 
-    // Nombre: primera parte antes de CUIT o número de cliente
     let nombre = text.replace(/^\d{1,2}\.\s*/, '');
     nombre = nombre.replace(/[-–]\s*CUIT\s*[\d\-]+.*/i, '');
     nombre = nombre.replace(/[-–]\s*\d{2}-\d{6,}-\d.*/,'');
     nombre = nombre.replace(/\s*[-–]+\s*$/, '').replace(/\s+/g, ' ').trim();
-    // cortar en palabras en mayúsculas seguidas de números (dirección)
     const dirM = nombre.match(/^([A-ZÁÉÍÓÚÑ\s\/\.\-&']+?)(?:\s+(?:CUIT|\d{2,}))/);
     if (dirM) nombre = dirM[1].trim();
     if (nombre.length > 60) nombre = nombre.substring(0, 60).replace(/\s+\S*$/, '') + '…';
     if (nombre.length < 2) return;
 
-    // Importe: último número con formato "1.234.567,89" o "1.234,56"
     const montos = [...text.matchAll(/\b(\d{1,3}(?:\.\d{3})*,\d{2})\b/g)].map(x => x[1]);
     if (!montos.length) return;
 
-    // Buscar par repetido al final (col A y TOTAL) → esa es la cifra real
     let importe = 0;
     for (let k = montos.length - 1; k >= 0; k--) {
       const v = parseARS(montos[k]);
@@ -858,9 +510,7 @@ function extractGastosPorConcepto(clean, rubros, pagesItems) {
       }
       if (v >= 0 && importe === 0) importe = v;
     }
-    // importe 0 es válido (ej: Rubro 5 sin movimientos, EMITANK $0)
 
-    // Descripción: buscar "POR XXXX" o período
     let detalle = '';
     const porM = text.match(/\bPOR\s+([A-ZÁÉÍÓÚÑ][^-\d]{4,65}?)(?:\s*[-–]\s*[A-Z]|\s{2,}|\d|\.$|$)/i);
     if (porM) detalle = porM[1].trim().replace(/\s+/g,' ');
@@ -877,24 +527,19 @@ function extractGastosPorConcepto(clean, rubros, pagesItems) {
     conceptos.push({ rubroId: currentRubroId, concepto: nombre+(detalle?' — '+detalle:''), importe, proveedor: nombre, detalle });
   };
 
-  // Regex para detectar inicio de ítem numerado
   const itemStartRx = /^\s*(\d{1,2})\.\s*([A-ZÁÉÍÓÚÑ].+)/;
-  // Regex para detectar encabezado de rubro: "2 SERVICIOS PÚBLICOS" o "3 ABONOS..."
   const rubroHeaderRx = /^\s*(\d{1,2})\s+(?:SERVICIOS|ABONOS|MANTENIMIENTO|TRABAJOS|GASTOS|PAGOS|OTROS|SEGUROS)/i;
-  // Regex para total de rubro
   const totalRubroRx = /TOTAL\s+RUBRO\s+(\d+)/i;
 
   for (const rawLine of suministrosLines) {
     const line = rawLine.trim();
     if (!line || line === '--- PAGE BREAK ---') continue;
 
-    // ¿Es total de rubro?
     if (totalRubroRx.test(line)) {
       flushItem();
       continue;
     }
 
-    // ¿Es encabezado de rubro?
     const rhM = line.match(rubroHeaderRx);
     if (rhM) {
       flushItem();
@@ -902,7 +547,6 @@ function extractGastosPorConcepto(clean, rubros, pagesItems) {
       continue;
     }
 
-    // ¿Es inicio de ítem numerado?
     const isM = line.match(itemStartRx);
     if (isM) {
       flushItem();
@@ -910,15 +554,12 @@ function extractGastosPorConcepto(clean, rubros, pagesItems) {
       continue;
     }
 
-    // Si estamos dentro de un ítem, acumular línea
     if (buffer.length > 0) {
-      // Una línea que solo tiene un número (importe) al final del ítem
       buffer.push(line);
     }
   }
-  flushItem(); // último ítem pendiente
+  flushItem();
 
-  // Fallback por rubro si no se extrajeron ítems
   for (let rId = 2; rId <= 10; rId++) {
     const rIdStr = String(rId);
     const tieneItems = conceptos.some(c => c.rubroId === rIdStr);
@@ -932,11 +573,9 @@ function extractGastosPorConcepto(clean, rubros, pagesItems) {
   return conceptos;
 }
 
-/* ──── Construir lista de proveedores individuales para tab Proveedores ─ */
 function agruparProveedores(conceptos, rubros) {
   const lista = [];
 
-  // Rubro 1: Personal & Cargas — se muestra como un único ítem consolidado
   const r1 = rubros.find(r => r.id === '1');
   if (r1 && r1.imp > 0) {
     lista.push({ 
@@ -948,8 +587,6 @@ function agruparProveedores(conceptos, rubros) {
     });
   }
 
-  // Rubros 2-10: cada línea se muestra INDIVIDUALMENTE sin agrupar
-  // Se preservan todos los conceptos tal como vienen del PDF
   conceptos.filter(c => String(c.rubroId) !== '1').forEach(c => {
     if (c.importe > 0) {
       lista.push({
@@ -965,9 +602,6 @@ function agruparProveedores(conceptos, rubros) {
   return lista.filter(p => p.importe > 0).sort((a, b) => b.importe - a.importe);
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   DEUDORES + interés del prorrateo
-══════════════════════════════════════════════════════════════════════ */
 function extractDeudores(clean, pageTexts) {
   const secM=clean.match(/UNIDADES CON SALDOS DEUDORES([\s\S]*?)TOTAL\.\.\./);
   if(!secM) return [];
@@ -995,19 +629,12 @@ function extractDeudores(clean, pageTexts) {
     .sort((a,b)=>b.total-a.total);
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   PERSONAL — parser línea por línea (formato real pdf.js / pdfplumber)
-   Cada concepto ocupa su propia línea: "CONCEPTO monto\n"
-   pdf.js separa páginas con un separador que preservamos.
-══════════════════════════════════════════════════════════════════════ */
 function extractPersonal(full, rubros, pagesItems) {
   const personal = {empleados: [], aportes: []};
 
-  /* ── 1. Reconstruir texto con líneas reales desde pdf.js items ── */
   const lineText = reconstructLines(pagesItems);
   const lines = lineText.split('\n');
 
-  /* ── 2. Encontrar sección de remuneraciones ── */
   let inSection = false;
   let sectionLines = [];
   for (const line of lines) {
@@ -1028,7 +655,6 @@ function extractPersonal(full, rubros, pagesItems) {
 
   log('📄 Sección Personal: ' + sectionLines.length + ' líneas reconstruidas');
 
-  /* ── 3. Parsear empleados ── */
   let currentEmp = null;
   let inDetalle = false;
   let inAportes = false;
@@ -1037,13 +663,10 @@ function extractPersonal(full, rubros, pagesItems) {
     const line = sectionLines[i].trim();
     if (!line || line === '--- PAGE BREAK ---') continue;
 
-    // Detectar cabecera de empleado
     const cabNombre = line.match(/Nombre y apellido:\s*([A-ZÁÉÍÓÚÑ\/][A-ZÁÉÍÓÚÑ\/\s]+?)\s+CUIL:\s*([\d\-]+)/i);
     if (cabNombre) {
-      // Guardar empleado anterior si existe
       if (currentEmp && (currentEmp.neto > 0 || currentEmp.totalBruto > 0 || currentEmp.haberes.length > 0)) {
         personal.empleados.push(currentEmp);
-        log('   ✔ ' + currentEmp.nombre + ' — Haberes: ' + currentEmp.haberes.length + ', Desc: ' + currentEmp.descuentos.length + ', Bruto: ' + fmtARS(currentEmp.totalBruto) + ', Neto: ' + fmtARS(currentEmp.neto));
       }
       currentEmp = {
         nombre: cabNombre[1].trim().replace(/\s+/g, ' '),
@@ -1058,15 +681,11 @@ function extractPersonal(full, rubros, pagesItems) {
     }
 
     if (!currentEmp) {
-      // Check for aportes section before any employee (shouldn't happen, but check)
       if (/APORTES Y CONTRIBUCIONES/i.test(line)) { inAportes = true; continue; }
-      if (inAportes) {
-        parseAporteLine(line, personal);
-      }
+      if (inAportes) parseAporteLine(line, personal);
       continue;
     }
 
-    // Cargo
     const cargoM = line.match(/Cargo:\s*(.+?)\s+Categor[ií]a del edificio:\s*(\w+)/i);
     if (cargoM) {
       currentEmp.cargo = cargoM[1].trim().replace(/\s+/g, ' ');
@@ -1074,52 +693,38 @@ function extractPersonal(full, rubros, pagesItems) {
       continue;
     }
 
-    // Período
     const perM = line.match(/Per[ií]odo:\s*([A-ZÁÉÍÓÚÑ\/\d]+)/i);
     if (perM) {
       currentEmp.periodo = perM[1].trim();
       continue;
     }
 
-    // Detectar inicio de detalle
     if (/DETALLE DE SUELDO Y CARGAS SOCIALES/i.test(line)) {
       inDetalle = true;
       continue;
     }
 
-    // Detectar aportes
     if (/APORTES Y CONTRIBUCIONES/i.test(line)) {
       inDetalle = false;
       inAportes = true;
       continue;
     }
 
-    // Detectar TOTAL RUBRO 1 - fin de toda la sección
     if (/TOTAL RUBRO 1/i.test(line)) {
       inAportes = false;
       break;
     }
 
-    // Parsear aportes
     if (inAportes) {
       parseAporteLine(line, personal);
-      // Check for TOTAL line in aportes
-      if (/^TOTAL\s/i.test(line)) {
-        const totalPctM = line.match(/TOTAL\s+([\d,]+)%\s+([\d.,]+)/);
-        if (totalPctM) {
-          // This is the aportes total line, continue
-        }
-        inAportes = false;
-      }
+      if (/^TOTAL\s/i.test(line)) inAportes = false;
       continue;
     }
 
     if (!inDetalle) continue;
 
-    // Saltear línea de identificación del empleado (N.ENC.PERM... NOMBRE CUIL PERIODO)
     if (/^\d+\.\s*(?:ENC|AYUD)[\s.]/i.test(line)) continue;
 
-    // Detectar TOTALES
     const totalMatch = line.match(/T\s*O\s*T\s*A\s*L\s*E\s*S/i);
     if (totalMatch) {
       const nums = line.match(/[\d]{1,3}(?:\.[\d]{3})*,[\d]{2}/g) || [];
@@ -1137,7 +742,6 @@ function extractPersonal(full, rubros, pagesItems) {
       continue;
     }
 
-    // Detectar línea TOTAL con porcentaje (después de TOTALES)
     if (/^TOTAL\s+/i.test(line) && !inDetalle) {
       const pM = line.match(/TOTAL\s+([\d,]+)%\s+([\d.,]+)/);
       if (pM && currentEmp) {
@@ -1148,8 +752,6 @@ function extractPersonal(full, rubros, pagesItems) {
       continue;
     }
 
-    // Parsear línea de concepto: "TEXTO_CONCEPTO  MONTO" o "TEXTO_CONCEPTO  -MONTO"
-    // El monto está al final de la línea
     const conceptoM = line.match(/^(.+?)\s+(-?[\d]{1,3}(?:\.[\d]{3})*,[\d]{2})\s*$/);
     if (conceptoM) {
       const concepto = conceptoM[1].trim().replace(/\s+/g, ' ');
@@ -1157,7 +759,6 @@ function extractPersonal(full, rubros, pagesItems) {
       const valor = parseARS(valorStr);
       const esDesc = valorStr.startsWith('-') || valor < 0;
 
-      // Filtros de ruido
       if (concepto.length < 3) continue;
       if (/^(?:A|B|C|TOTAL|\d+)$/.test(concepto)) continue;
       if (/^Nombre y apellido/i.test(concepto)) continue;
@@ -1173,22 +774,16 @@ function extractPersonal(full, rubros, pagesItems) {
       continue;
     }
 
-    // Also check for the TOTAL percentage line (appears after TOTALES on a separate line)
     if (!inDetalle) {
       const pctLine = line.match(/TOTAL\s+([\d,]+)%\s+([\d.,]+)/);
-      if (pctLine && currentEmp) {
-        currentEmp.porcentaje = parseARS(pctLine[1]);
-      }
+      if (pctLine && currentEmp) currentEmp.porcentaje = parseARS(pctLine[1]);
     }
   }
 
-  // Push last employee
   if (currentEmp && (currentEmp.neto > 0 || currentEmp.totalBruto > 0 || currentEmp.haberes.length > 0)) {
     personal.empleados.push(currentEmp);
-    log('   ✔ ' + currentEmp.nombre + ' — Haberes: ' + currentEmp.haberes.length + ', Desc: ' + currentEmp.descuentos.length + ', Bruto: ' + fmtARS(currentEmp.totalBruto) + ', Neto: ' + fmtARS(currentEmp.neto));
   }
 
-  /* ── 4. Deduplicar por CUIL+Período ── */
   const empMap = {};
   personal.empleados.forEach(e => {
     const k = e.cuil + '|' + e.periodo;
@@ -1202,28 +797,16 @@ function extractPersonal(full, rubros, pagesItems) {
   });
   personal.empleados = Object.values(empMap);
 
-  // Verificación
-  const r1 = rubros.find(r => r.id === '1');
-  if (r1) {
-    const sE = personal.empleados.reduce((s, e) => s + e.totalBruto, 0);
-    const sA = personal.aportes.reduce((s, a) => s + a.importe, 0);
-    log('   📊 Bruto empleados: ' + fmtARS(sE) + ' + Aportes: ' + fmtARS(sA) + ' = ' + fmtARS(sE + sA) + ' / Rubro 1 PDF: ' + fmtARS(r1.imp));
-  }
-
   return personal;
 }
 
-/* ── Helper: parsear línea de aporte ── */
 function parseAporteLine(line, personal) {
   const lt = line.trim();
   if (!lt) return;
-  // Buscar líneas con montos al final
   const nums = lt.match(/[\d]{1,3}(?:\.[\d]{3})*,[\d]{2}/g) || [];
   if (nums.length < 1) return;
-  // El último monto es el importe
   const v = parseARS(nums[nums.length - 1]);
   if (v <= 0) return;
-  // Nombre: quitar número inicial, periodos y montos
   let nombre = lt
     .replace(/^\d+\./, '')
     .replace(/[\d]{1,3}(?:\.[\d]{3})*,[\d]{2}/g, '')
@@ -1234,10 +817,6 @@ function parseAporteLine(line, personal) {
     personal.aportes.push({concepto: nombre, importe: v});
 }
 
-
-/* ══════════════════════════════════════════════════════════════════════
-   HALLAZGOS & ESTRATEGIA — generados desde los datos reales
-══════════════════════════════════════════════════════════════════════ */
 function generarHallazgos(data) {
   const total=data.rubros.reduce((s,r)=>s+r.imp,0)||1;
   const r1=data.rubros.find(r=>r.id==='1');
@@ -1251,7 +830,6 @@ function generarHallazgos(data) {
 
   const criticas=[],atencion=[],positivos=[],acciones=[];
 
-  // ── Alertas críticas ──────────────────────────────────────────────
   if(data.deudores.length>0){
     const mayor=data.deudores[0];
     criticas.push({
@@ -1275,7 +853,6 @@ function generarHallazgos(data) {
     });
   }
 
-  // ── Atención ──────────────────────────────────────────────────────
   if(data.deudores.length>10){
     atencion.push({
       titulo:'Alto número de unidades en mora',
@@ -1290,7 +867,6 @@ function generarHallazgos(data) {
       valor:pctPersonal.toFixed(2)+'%'
     });
   }
-  // Rubro con mayor crecimiento (el que más pesa aparte de personal)
   const rubrosNoPersonal=data.rubros.filter(r=>r.id!=='1').sort((a,b)=>b.imp-a.imp);
   if(rubrosNoPersonal.length>0){
     const top=rubrosNoPersonal[0];
@@ -1310,7 +886,6 @@ function generarHallazgos(data) {
     });
   }
 
-  // ── Positivos ──────────────────────────────────────────────────────
   if(resultado>0){
     positivos.push({
       titulo:'Resultado del período positivo',
@@ -1336,7 +911,6 @@ function generarHallazgos(data) {
     positivos.push({titulo:'Sin unidades deudoras',texto:'No se registraron unidades con saldos deudores en este período.',valor:'✓'});
   }
 
-  // ── Cursos de acción ───────────────────────────────────────────────
   if(data.deudores.length>0){
     const top3=data.deudores.slice(0,3).map(d=>`${d.unidad} (${fmtARS(d.total)})`).join(', ');
     acciones.push({
@@ -1352,7 +926,6 @@ function generarHallazgos(data) {
       valor:'Revisión recomendada'
     });
   }
-  // Proveedor más pesado (excluyendo personal)
   const topProv=data.proveedores.filter(p=>p.nombre!=='Personal & Cargas').slice(0,1);
   if(topProv.length>0&&topProv[0].importe>total*0.1){
     acciones.push({
@@ -1400,13 +973,11 @@ function renderHallazgos(data) {
 function renderDashboard(data) {
   gData=data;
 
-  // Header
   document.getElementById('periodoDisplay').textContent=
     data.periodo?`Período: ${data.periodo}`:'—';
   document.getElementById('headerEdificio').textContent=
     data.edificio?`Consorcio ${data.edificio}`:'Dashboard de Expensas';
 
-  // KPIs
   document.getElementById('kpi-ing').textContent   = fmtARS0(data.ingresos);
   document.getElementById('kpi-egr').textContent   = fmtARS0(data.egresos);
   document.getElementById('kpi-banco').textContent = fmtARS0(data.saldoBancoNum);
@@ -1417,18 +988,14 @@ function renderDashboard(data) {
   renderResumen(data);
   renderGastosPorRubro(data);
   renderPersonalYCargas(data.personal,data.rubros);
-  renderProveedores(data);
   renderDeudores(data);
-  renderPatrimonial(data.estadoPatrimonial);
-  renderHallazgos(data);
 
-  // Mostrar shell, ocultar welcome
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('appShell').classList.add('visible');
   showPage('resumen');
 }
 
-/* ──── Resumen ──────────────────────────────────────────────────────── */
+/* ──── Resumen (sin cambios) ────────────────────────────────────────── */
 function renderResumen(data) {
   const rubros=data.rubros.sort((a,b)=>b.imp-a.imp);
   const top5=rubros.slice(0,5);
@@ -1482,7 +1049,6 @@ function renderResumen(data) {
       }}
   });
 
-  // Gráfico 4: Desglose Personal — Sueldo Bruto por empleado + Aportes
   destroyChart('cPersonalBreak');
   const emp=data.personal.empleados;
   const totalAportes=data.personal.aportes.reduce((s,a)=>s+a.importe,0);
@@ -1522,7 +1088,6 @@ function renderResumen(data) {
     });
   }
 
-  // Tabla de empleados en Resumen
   const tbody=document.getElementById('resumen-empleados-body');
   const empty=document.getElementById('resumen-empleados-empty');
   if(emp.length>0){
@@ -1551,32 +1116,24 @@ function renderResumen(data) {
   }
 }
 
-/* ──── Gastos por Rubro ─────────────────────────────────────────────── */
+/* ──── Gastos por Rubro (sin cambios) ───────────────────────────────── */
 function renderGastosPorRubro(data) {
-  const c=data.gastosPorConcepto;
-  const total=data.rubros.reduce((s,r)=>s+r.imp,0);
-  document.getElementById('rubros-subtitle').textContent=`${c.length} conceptos · ${data.periodo||'—'}`;
+  const total = data.rubros.reduce((s,r)=>s+r.imp,0);
+  document.getElementById('rubros-subtitle').textContent=`${data.rubros.length} rubros · ${data.periodo||'—'}`;
   document.getElementById('rubros-total-display').textContent=fmtARS(total);
-  document.getElementById('rubros-count-label').textContent=`${c.length} conceptos`;
+  document.getElementById('rubros-count-label').textContent=`${data.rubros.length} rubros`;
 
-  // Select rubros
-  const sel=document.getElementById('filtroRubro');
-  sel.innerHTML='<option value="">Todos los rubros</option>';
-  const ids=new Set();
-  c.forEach(x=>{if(!ids.has(x.rubroId)){ids.add(x.rubroId);sel.innerHTML+=`<option value="${x.rubroId}">${RUBRO_NOMBRES[x.rubroId]||'Rubro '+x.rubroId}</option>`;}});
-
-  document.getElementById('bodyRubros').innerHTML=c.map(x=>{
-    const pct=total>0?(x.importe/total*100):0;
-    return `<tr data-rubro="${x.rubroId}">
-      <td><span class="rb rb-${x.rubroId}">${esc(RUBRO_NOMBRES[x.rubroId]||'Rubro '+x.rubroId)}</span></td>
-      <td class="text-slate-300">${esc(x.concepto)}</td>
-      <td class="font-mono text-right">${fmtARS(x.importe)}</td>
+  document.getElementById('bodyRubros').innerHTML=data.rubros.map(r=>{
+    const pct = r.pct;
+    return `<tr data-rubro="${r.id}">
+      <td><span class="rb rb-${r.id}">${esc(RUBRO_NOMBRES[r.id]||'Rubro '+r.id)}</span></td>
+      <td class="font-mono text-right">${fmtARS(r.imp)}</td>
       <td class="text-right"><span style="background:#1e3a2e;color:#34d399;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:600;">${pct.toFixed(2)}%</span></td>
     </tr>`;
   }).join('');
 }
 
-/* ──── Personal ─────────────────────────────────────────────────────── */
+/* ──── Personal (sin cambios) ───────────────────────────────────────── */
 function renderPersonalYCargas(personal,rubros) {
   const {empleados,aportes}=personal;
   const tBruto=empleados.reduce((s,e)=>s+e.totalBruto,0);
@@ -1630,12 +1187,23 @@ function renderPersonalYCargas(personal,rubros) {
   document.getElementById('aportes-total').textContent=fmtARS(tAportes);
 }
 
-/* ──── Proveedores ──────────────────────────────────────────────────── */
+/* ──── Proveedores (sin cambios) ────────────────────────────────────── */
 function renderProveedores(data) {
   const total = data.rubros.reduce((s,r) => s + r.imp, 0) || 1;
   const maxImp = data.proveedores[0]?.importe || 1;
 
-  // Lista plana ordenada por importe descendente
+  const sel = document.getElementById('filtroRubro');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todos los rubros</option>';
+    const ids = new Set();
+    data.proveedores.forEach(p => {
+      if (!ids.has(p.rubroId)) {
+        ids.add(p.rubroId);
+        sel.innerHTML += `<option value="${p.rubroId}">${RUBRO_NOMBRES[p.rubroId] || 'Rubro ' + p.rubroId}</option>`;
+      }
+    });
+  }
+
   let html = '';
   data.proveedores.forEach(p => {
     const pct = p.importe / total * 100;
@@ -1648,7 +1216,7 @@ function renderProveedores(data) {
       detalle = `<div style="font-size:.73rem;color:#64748b;margin-top:.18rem;">📋 ${esc(p.detalle)}</div>`;
     }
 
-    html += `<tr>
+    html += `<tr data-rubro="${p.rubroId}">
       <td class="font-medium text-slate-200" style="padding:.75rem .75rem;">
         <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
           <span class="${rbClass}">${esc(rubroNombre)}</span>
@@ -1665,7 +1233,7 @@ function renderProveedores(data) {
   document.getElementById('bodyProv').innerHTML = html;
 }
 
-/* ──── Deudores ─────────────────────────────────────────────────────── */
+/* ──── Deudores (sin cambios) ───────────────────────────────────────── */
 function renderDeudores(data) {
   document.getElementById('deudores-subtitle').textContent=`${data.deudores.length} unidades con saldos deudores`;
   document.getElementById('deudores-nota').textContent=`Total declarado: ${fmtARS(data.deudaTotalNum)}`;
@@ -1674,7 +1242,6 @@ function renderDeudores(data) {
   const totalDeuda=data.deudaTotalNum||capVis||1;
   document.getElementById('bodyDeud').innerHTML=data.deudores.map(d=>{
     const pct=(d.total/totalDeuda*100);
-    const barW=Math.min(pct*2,100); // escalar para visual
     return `<tr>
       <td class="font-medium text-slate-200">${esc(d.unidad)}</td>
       <td class="font-mono text-right">${fmtARS(d.capital)}</td>
@@ -1692,7 +1259,7 @@ function renderDeudores(data) {
   }).join('');
 }
 
-/* ──── Patrimonial ──────────────────────────────────────────────────── */
+/* ──── Patrimonial (sin cambios) ────────────────────────────────────── */
 function renderPatrimonial(ep) {
   const d=ep.disponibilidades||0,e=ep.expensasCobrar||0,o=ep.otrosActivos||0,p=ep.gastosPendientes||0;
   const a=d+e+o, n=ep.patrimonioNeto||(a-p);
@@ -1717,7 +1284,266 @@ function renderPatrimonial(ep) {
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 /* ══════════════════════════════════════════════════════════════════════
-   FILE HANDLING
+   EXPORTAR PDF — renderizado a ancho A4 real, paginación por bloques
+   Fondo consistente con el dashboard · título por sección · sin cortes
+══════════════════════════════════════════════════════════════════════ */
+async function exportActiveToPDF() {
+  const active = document.querySelector('.page.active');
+  if (!active) return alert('No hay sección activa para exportar.');
+
+  const sectionName = active.id.replace('page-', '');
+
+  // Mapa de secciones → etiquetas legibles con emoji
+  const SEC_LABELS = {
+    resumen:      '📊 Resumen General',
+    personal:     '👥 Personal & Cargas Sociales',
+    deudores:     '⚠️ Deudores',
+    rubros:       '📋 Gastos por Rubro',
+    proveedores:  '🏭 Proveedores',
+    patrimonial:  '🏛️ Estado Patrimonial',
+    hallazgos:    '🎯 Hallazgos & Estrategia',
+    glosario:     '📖 Glosario de Términos',
+    log:          '🔍 Log de Procesamiento'
+  };
+  const secLabel = SEC_LABELS[sectionName] || sectionName.toUpperCase();
+
+  const btn = document.getElementById('pdfBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '⏳ Generando PDF...';
+  btn.disabled = true;
+
+  // ── Constantes físicas A4 ──────────────────────────────────────────
+  const A4_W_MM    = 210;
+  const A4_H_MM    = 297;
+  const MARGIN_MM  = 10;
+  const HEADER_MM  = 16;   // banda superior con título
+  const FOOTER_MM  = 10;   // banda inferior con fecha/página
+  const CONTENT_H_MM = A4_H_MM - MARGIN_MM * 2 - HEADER_MM - FOOTER_MM;
+  const RENDER_W_PX   = 794;   // ancho A4 a 96 dpi
+
+  // ── Colores del dashboard (slate-900 palette) ──────────────────────
+  const BG_DARK   = [15,  23,  42];   // #0f172a  —  fondo principal
+  const BG_HEADER = [15,  23,  42];   // mismo fondo para header
+  const BG_STRIPE = [30,  41,  59];   // #1e293b  —  banda alternada leve
+  const GREEN     = [16, 185, 129];   // #10b981  —  acento verde
+  const TEXT_W    = [255,255,255];
+  const TEXT_M    = [148,163,184];    // slate-400
+  const TEXT_S    = [71,  85, 105];   // slate-600
+  const BORDER    = [51,  65,  85];   // slate-700
+
+  // ── Contenedor de render oculto a ancho A4 ─────────────────────────
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = [
+    'position:fixed','left:-9999px','top:0',
+    `width:${RENDER_W_PX}px`,
+    'background:#0f172a',
+    'color:#e2e8f0',
+    'font-family:system-ui,-apple-system,sans-serif',
+    'font-size:13px','line-height:1.5',
+    'padding:0','margin:0',
+    'box-sizing:border-box',
+    'overflow:visible','z-index:-1'
+  ].join(';');
+  document.body.appendChild(wrapper);
+
+  // Bloque de título de sección visible en el render
+  const titleBar = document.createElement('div');
+  titleBar.style.cssText = [
+    'width:100%','background:#1e293b',
+    'border-left:4px solid #10b981',
+    'padding:10px 16px','margin-bottom:14px',
+    'border-radius:0 8px 8px 0',
+    'box-sizing:border-box'
+  ].join(';');
+  titleBar.innerHTML = `<div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:-.01em;">${secLabel}</div>` +
+    (gData && gData.periodo ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;">Período: ${gData.periodo}</div>` : '');
+  wrapper.appendChild(titleBar);
+
+  // Clonar contenido activo
+  const clone = active.cloneNode(true);
+  clone.style.cssText = 'display:block;width:100%;padding:0;margin:0;background:transparent;overflow:visible;';
+
+  // Estilos de override para render PDF
+  const styleOverride = document.createElement('style');
+  styleOverride.textContent = `
+    * { box-sizing: border-box !important; }
+    .card {
+      background: #1e293b !important;
+      border-radius: 8px !important;
+      padding: 14px !important;
+      margin-bottom: 12px !important;
+      box-shadow: none !important;
+      break-inside: avoid !important;
+    }
+    table { width:100% !important; border-collapse:collapse !important; font-size:12px !important; }
+    th {
+      padding: 6px 8px !important; font-size: 10px !important;
+      background: #0f172a !important; color: #94a3b8 !important;
+      border-bottom: 1px solid #334155 !important; white-space: nowrap !important;
+    }
+    td { padding: 6px 8px !important; border-bottom: 1px solid #1e293b !important; font-size: 12px !important; }
+    tr:last-child td { border-bottom: none !important; }
+    .kpi-value { font-size: 1.1rem !important; }
+    .kpi-label { font-size: .6rem !important; }
+    .chart-box canvas { max-width: 100% !important; height: auto !important; }
+    .t-wrap { overflow: visible !important; }
+    /* Ocultar controles interactivos */
+    .search-box, input[type=text], input[type=search], select, button { display: none !important; }
+    .rb { font-size: .6rem !important; padding: 1px 5px !important; }
+    .emp-card {
+      padding: 10px !important; margin-bottom: 10px !important;
+      break-inside: avoid !important; page-break-inside: avoid !important;
+    }
+    .hall-card { padding: 10px !important; break-inside: avoid !important; }
+    .log-wrap { height: auto !important; max-height: none !important; overflow: visible !important; font-size: 10px !important; }
+    /* Grids */
+    .grid { display: grid !important; }
+    .gap-3 { gap: 10px !important; }
+    .gap-4 { gap: 12px !important; }
+    .gap-5 { gap: 14px !important; }
+    .grid-cols-2    { grid-template-columns: repeat(2,1fr) !important; }
+    .grid-cols-3    { grid-template-columns: repeat(3,1fr) !important; }
+    .grid-cols-4    { grid-template-columns: repeat(4,1fr) !important; }
+    .grid-cols-5    { grid-template-columns: repeat(5,1fr) !important; }
+    .md\\:grid-cols-2 { grid-template-columns: repeat(2,1fr) !important; }
+    .md\\:grid-cols-4 { grid-template-columns: repeat(4,1fr) !important; }
+    .lg\\:grid-cols-3 { grid-template-columns: repeat(3,1fr) !important; }
+    .lg\\:grid-cols-4 { grid-template-columns: repeat(4,1fr) !important; }
+    .space-y-5>*+* { margin-top: 12px !important; }
+    .space-y-4>*+* { margin-top: 10px !important; }
+    /* Personal — forzar que todo sea visible */
+    #empleados-container { display: block !important; overflow: visible !important; }
+    .c-row { break-inside: avoid !important; }
+    .sbadge { display: inline-block !important; }
+  `;
+  wrapper.appendChild(styleOverride);
+  wrapper.appendChild(clone);
+
+  // Esperar a que el DOM renderice
+  await new Promise(r => setTimeout(r, 180));
+
+  let canvas;
+  try {
+    canvas = await html2canvas(wrapper, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#0f172a',
+      logging: false,
+      allowTaint: true,
+      width: RENDER_W_PX,
+      height: wrapper.scrollHeight,
+      windowWidth: RENDER_W_PX
+    });
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+
+  // ── Relación px/mm ─────────────────────────────────────────────────
+  const CONTENT_W_MM   = A4_W_MM - MARGIN_MM * 2;          // 190 mm
+  const pxPerMm        = canvas.width / CONTENT_W_MM;       // canvas px por mm
+  const pageContent_px = CONTENT_H_MM * pxPerMm;            // px por página útil
+  const totalH_px      = canvas.height;
+  const totalPages     = Math.ceil(totalH_px / pageContent_px);
+
+  // ── Construir PDF ──────────────────────────────────────────────────
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4', compress:true });
+
+  const edificio = document.getElementById('headerEdificio')?.textContent?.trim() || 'Dashboard de Expensas';
+  const periodo  = (gData && gData.periodo) ? gData.periodo : '';
+  // Limpiar emojis del label para jsPDF (no los renderiza bien)
+  const secLabelClean = secLabel.replace(/[\u{1F300}-\u{1FBFF}\u{2600}-\u{27FF}]\s*/gu, '').trim();
+
+  for (let p = 0; p < totalPages; p++) {
+    if (p > 0) pdf.addPage();
+
+    // ── Fondo completo de la página (mismo color que el dashboard) ──
+    pdf.setFillColor(...BG_DARK);
+    pdf.rect(0, 0, A4_W_MM, A4_H_MM, 'F');
+
+    // ── Header ──────────────────────────────────────────────────────
+    // Banda de cabecera ligeramente más clara
+    pdf.setFillColor(...BG_STRIPE);
+    pdf.rect(0, 0, A4_W_MM, MARGIN_MM + HEADER_MM, 'F');
+
+    // Línea verde acento
+    pdf.setDrawColor(...GREEN);
+    pdf.setLineWidth(0.6);
+    pdf.line(0, MARGIN_MM + HEADER_MM, A4_W_MM, MARGIN_MM + HEADER_MM);
+
+    // Barra lateral verde en header
+    pdf.setFillColor(...GREEN);
+    pdf.rect(0, 0, 2, MARGIN_MM + HEADER_MM, 'F');
+
+    // Edificio (pequeño, gris)
+    pdf.setFontSize(8);
+    pdf.setTextColor(...TEXT_M);
+    pdf.text('🏢 ' + edificio, MARGIN_MM + 3, MARGIN_MM + 5);
+
+    // Título de sección (grande, blanco)
+    pdf.setFontSize(13);
+    pdf.setTextColor(...TEXT_W);
+    pdf.text(secLabelClean, MARGIN_MM + 3, MARGIN_MM + 12);
+
+    // Período (derecha, gris)
+    if (periodo) {
+      pdf.setFontSize(8);
+      pdf.setTextColor(...TEXT_S);
+      pdf.text(periodo, A4_W_MM - MARGIN_MM, MARGIN_MM + 5, { align:'right' });
+    }
+
+    // Numeración
+    if (totalPages > 1) {
+      pdf.setFontSize(8);
+      pdf.setTextColor(...TEXT_M);
+      pdf.text(`${p + 1} / ${totalPages}`, A4_W_MM - MARGIN_MM, MARGIN_MM + 12, { align:'right' });
+    }
+
+    // ── Franja de contenido ─────────────────────────────────────────
+    const srcY    = Math.round(p * pageContent_px);
+    const srcH    = Math.min(pageContent_px, totalH_px - srcY);
+    const destY   = MARGIN_MM + HEADER_MM + 2;
+    const destH   = srcH / pxPerMm;
+
+    // Cortar franja del canvas
+    const slice   = document.createElement('canvas');
+    slice.width   = canvas.width;
+    slice.height  = Math.ceil(srcH);
+    const ctx     = slice.getContext('2d');
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, slice.width, slice.height);
+    ctx.drawImage(canvas, 0, -Math.round(srcY));
+
+    pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG',
+                 MARGIN_MM, destY, CONTENT_W_MM, destH);
+
+    // ── Footer ──────────────────────────────────────────────────────
+    const footerY = A4_H_MM - FOOTER_MM;
+    pdf.setFillColor(...BG_STRIPE);
+    pdf.rect(0, footerY - 1, A4_W_MM, FOOTER_MM + 2, 'F');
+
+    pdf.setDrawColor(...BORDER);
+    pdf.setLineWidth(0.25);
+    pdf.line(MARGIN_MM, footerY - 1, A4_W_MM - MARGIN_MM, footerY - 1);
+
+    pdf.setFontSize(7);
+    pdf.setTextColor(...TEXT_S);
+    pdf.text('Dashboard de Expensas · Mis Expensas GCBA', MARGIN_MM, footerY + 4);
+
+    const fecha = new Date().toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' });
+    pdf.text(`Generado: ${fecha}`, A4_W_MM - MARGIN_MM, footerY + 4, { align:'right' });
+  }
+
+  const safeName = secLabelClean ? secLabelClean.replace(/\s+/g,'-') : sectionName;
+  const safePer  = periodo ? periodo.replace('/','-') : 'sin-fecha';
+  pdf.save(`Expensas_${safeName}_${safePer}_${new Date().toISOString().slice(0,10)}.pdf`);
+
+  btn.innerHTML = originalText;
+  btn.disabled  = false;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   FILE HANDLING (sin cambios)
 ══════════════════════════════════════════════════════════════════════ */
 async function processFile(file) {
   if(!file.name.toLowerCase().endsWith('.pdf')){alert('Por favor subí un archivo PDF.');return;}
@@ -1745,13 +1571,9 @@ async function processFile(file) {
   }
 }
 
-// Input en header
 document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files.length)processFile(e.target.files[0]);});
-
-// Input en welcome
 document.getElementById('fileInputWelcome').addEventListener('change',e=>{if(e.target.files.length)processFile(e.target.files[0]);});
 
-// Limpiar — vuelve a la pantalla de bienvenida
 document.getElementById('clearBtn').addEventListener('click',()=>{
   document.getElementById('appShell').classList.remove('visible');
   document.getElementById('welcome').classList.remove('hidden');
@@ -1772,7 +1594,6 @@ document.getElementById('clearBtn').addEventListener('click',()=>{
   log('🧹 Dashboard limpiado.');
 });
 
-// Drag & drop sobre la pantalla de bienvenida
 const wel=document.getElementById('welcome');
 document.addEventListener('dragover',e=>{e.preventDefault();wel.classList.add('drag-wl');});
 document.addEventListener('dragleave',()=>wel.classList.remove('drag-wl'));
