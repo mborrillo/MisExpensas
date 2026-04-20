@@ -113,7 +113,6 @@ Incremento sostenido en gastos de mantenimiento sin justificación clara.
 ---
 
 ## Características
-- ✔ procesamiento local (no sube datos a servidores)
 - ✔ dashboard interactivo
 - ✔ indicadores clave
 - ✔ detección de inconsistencias
